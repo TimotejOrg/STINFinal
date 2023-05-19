@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Registration Page</title>
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+</head>
+<body>
+  <div class="form-container">
+    <form>
+      <input type="text" id="firstName" name="firstName" placeholder="Jmeno" required>
+      
+      <input type="text" id="lastName" name="lastName" placeholder="Příjmení" required>
+      
+      <input type="email" id="email" name="email" placeholder="E-mail" required>
+      
+      <input type="password" id="password" name="password" placeholder="Heslo" required>
+      
+      <div class="select-container">
+        <div class="custom-select">
+          <select id="currency" name="currency" required>
+            <option value="" disabled selected>Vyberte měnu</option>
+              <option value="czk">CZK</option>          
+              <option value="eur">EUR</option>
+              <option value="usd">USD</option>
+              
+          </select>
+          <div class="arrow"></div>
+        </div>
+      </div>
+      <input type="text" id="securityAnswer" name="securityAnswer" placeholder="Bezpečnostní otázka" required>
+      <input type="text" id="securityAnswer" name="securityAnswer" placeholder="Bezpečnostní odpověď" required>
+      
+      <div class="button">
+        <button type="submit">Registrovat</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

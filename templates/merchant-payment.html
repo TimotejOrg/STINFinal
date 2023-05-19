@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Platba u obchodníka</title>
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+  <style>
+    #email {
+      margin-top: 50px; /* Adjust the margin value as needed */
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <form>
+      <input type="text" id="amount" name="amount" placeholder="Částka k zaplacení" required>
+      <div class="select-container">
+        <div class="custom-select">
+          <select id="currency" name="currency" required>
+            <option value="" disabled selected>Vyberte měnu</option>
+              <option value="czk">CZK</option>          
+              <option value="eur">EUR</option>
+              <option value="usd">USD</option>
+              
+          </select>
+          <div class="arrow"></div>
+        </div>
+      </div>
+      <input type="text" id="merchantAccount" name="merchantAccount" placeholder="Číslo bankovního účtu obchodníka" required>
+      
+      <input type="email" id="email" name="email" placeholder="E-mail" required>
+      <input type="password" id="password" name="password" placeholder="Heslo" required>
+      
+      <div class="button">
+        <button type="submit">Zaplatit</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

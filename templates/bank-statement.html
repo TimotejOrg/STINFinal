@@ -1,12 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Bank Statement</title>
-  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+    <title>Bank Statement</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+            padding: 8px;
+        }
+
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 5%;
+            padding-left: 250px;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 5%;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 5%;
+        }
+
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 5%;
+        }
+
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 5%;
+        }
+
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 5%;
+            padding-right: 250px;
+        }
+    </style>
 </head>
 <body>
-  <div class="form-container">
-    <!-- Bank statement content here -->
-  </div>
+    <table>
+        <tr>
+            <th>Transaction Number</th>
+            <th>Transaction Type</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Balance</th>
+            <th>Date</th>
+        </tr>
+        {% for transaction in transactions %}
+        <tr>
+            <td>{{ transaction[0] }}</td>
+            <td>{{ transaction[2] }}</td>
+            <td>{{ transaction[3] }}</td>
+            <td>{{ transaction[4] }}</td>
+            <td>{{ transaction[5] }}</td>
+            <td>{{ transaction[6] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>

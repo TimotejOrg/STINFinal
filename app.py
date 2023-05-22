@@ -4,9 +4,10 @@ import sqlite3
 
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
-#c.execute("DROP TABLE IF EXISTS users")
+# c.execute("DROP TABLE IF EXISTS users")
+# c.execute("DROP TABLE IF EXISTS transactions")
 c.execute("""CREATE TABLE IF NOT EXISTS users (
-            firstName text,
+            firstName text, 
             lastName text,
             email text,
             password text,
@@ -14,6 +15,16 @@ c.execute("""CREATE TABLE IF NOT EXISTS users (
             securityAnswer text,
             balance integer
             )""")
+c.execute("""CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userEmail TEXT,
+            transactionType TEXT,
+            amount REAL,
+            currency TEXT,
+            balance REAL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""")
+
 conn.commit()
 
 app = Flask(__name__)
@@ -104,7 +115,9 @@ def deposit():
 @app.route('/account/bank-statement/')
 def bank_statement():
     if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
-        return render_template('bank-statement.html')
+        # Retrieve the transaction history from the "transactions" table for the current user
+        transactions = getTransactions()
+        return render_template('bank-statement.html', transactions=transactions)
     else:
         return redirect('/login/')
 

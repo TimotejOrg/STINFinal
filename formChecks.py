@@ -3,6 +3,16 @@ from forex_python.converter import CurrencyRates
 import sqlite3
 
 
+def getBalance():
+    return session['balance']
+
+
+def getTransactions():
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM transactions WHERE userEmail=?", [session['email']])
+    return c.fetchall()
+
 def convertCurrency(from_currency, to_currency, amount):
     # Create an instance of the CurrencyRates class
     c = CurrencyRates()
@@ -33,7 +43,7 @@ def checkRegistration(registration_info):
 def checkMerchantInfo(merchant_info):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    payment_amount = float(merchant_info[0])
+    orig_payment_amount = float(merchant_info[0])
     merchant_currency = merchant_info[1]
     email = merchant_info[3]
     password = merchant_info[4]
@@ -43,14 +53,18 @@ def checkMerchantInfo(merchant_info):
     if user:  # email and password match a specific user
         user_currency = user[4]
         current_balance = user[6]
-        payment_amount = convertCurrency(merchant_currency, user_currency, float(payment_amount))
+        payment_amount = convertCurrency(merchant_currency, user_currency, float(orig_payment_amount))
         new_balance = current_balance - payment_amount
 
         if new_balance >= 0:
-            # Update the user's balance in the database
-            c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, email))
-            conn.commit()
-            return "True"  # Funds successfully removed
+            if orig_payment_amount > 0:
+                # Update the user's balance in the database
+                c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, email))
+                c.execute("INSERT INTO transactions (userEmail, transactionType, amount, currency, balance) "
+                          "VALUES (?, 'payment', ?, ?, ?)", (email, orig_payment_amount, merchant_currency, round(new_balance, 2)))
+                conn.commit()
+                return "True"  # Funds successfully removed
+            else: return "Incorrect payment amount"
         else:
             return "Insufficient funds"  # False  # Insufficient funds
     else:
@@ -95,13 +109,16 @@ def checkDeposit(deposit_info):
     c.execute("SELECT balance FROM users WHERE email=?", [session['email']])
     session['balance'] = c.fetchone()[0]
 
-    deposit_amount = deposit_info[0]
+    orig_deposit_amount = deposit_info[0]
     deposit_currency = deposit_info[1]
-    deposit_amount = convertCurrency(deposit_currency, session['currency'], float(deposit_amount))
+    deposit_amount = convertCurrency(deposit_currency, session['currency'], float(orig_deposit_amount))
     new_balance = session['balance'] + deposit_amount
     if float(deposit_info[0]) > 0:
         # Update the user's balance in the database
         c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, session['email']))
+        c.execute("INSERT INTO transactions (userEmail, transactionType, amount, currency, balance) "
+                  "VALUES (?, 'deposit', ?, ?, ?)",
+                  (session['email'], orig_deposit_amount, deposit_currency, round(new_balance, 2)))
         conn.commit()
         return True
     else:

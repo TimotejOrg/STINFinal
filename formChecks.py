@@ -1,3 +1,4 @@
+from flask import session
 import sqlite3
 
 
@@ -56,28 +57,28 @@ def checkLogin(login_info):
     # Check if the provided login (email) and password match a user in the database
     c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
     user = c.fetchone()
-
+    print(user)
     if user:
+        # Get all account info for current session
+        session['currency'] = user[4]
+        session['securityAnswer'] = user[5]
+        session['balance'] = user[6]
         return True  # Login successful
     else:
         return False  # Login failed
 
 
 def checkSecurityAnswer(security_answer_info):
-    # TODO: this will return true for anyone's security answer, not just the user's security answer
-    conn = sqlite3.connect('users.db')
-    c = conn.cursor()
-    # Check if the provided security answer matches the one associated with the user's email in the database
-    c.execute("SELECT * FROM users WHERE securityAnswer=?", security_answer_info)
-    user = c.fetchone()
-
-    if user:
+    # TODO: redirect people without session to login page
+    # Check if the provided security answer matches the one associated with the current session
+    if session['securityAnswer'] == security_answer_info[0]:
         return True  # Security answer is correct
     else:
         return False  # Security answer is incorrect
 
 
 def checkDeposit(deposit_info):
+    # TODO: redirect people without session to login page
     # TODO: add currency constraints
     # TODO: add other deposit errors like too many decimals etc.
     conn = sqlite3.connect('users.db')

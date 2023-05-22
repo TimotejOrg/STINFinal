@@ -17,6 +17,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS users (
 conn.commit()
 
 app = Flask(__name__)
+app.secret_key = "my_secret_key"
 
 
 @app.route('/')
@@ -64,36 +65,48 @@ def login():
 
 @app.route('/security-question/', methods=['GET', 'POST'])
 def security_question():
-    if request.method == 'POST':
-        security_answer_info = [request.form['securityAnswer']]
-        if checkSecurityAnswer(security_answer_info):
-            return redirect('/account/')
+    if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
+        if request.method == 'POST':
+            security_answer_info = [request.form['securityAnswer']]
+            if checkSecurityAnswer(security_answer_info):
+                return redirect('/account/')
+            else:
+                return "Incorrect security answer"
         else:
-            return "Incorrect security answer"
+            return render_template('security-question.html')
     else:
-        return render_template('security-question.html')
+        return redirect('/login/')
 
 
 @app.route('/account/')
 def account():
-    return render_template('account.html')
+    if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
+        return render_template('account.html')
+    else:
+        return redirect('/login/')
 
 
 @app.route('/account/deposit/', methods=['GET', 'POST'])
 def deposit():
-    if request.method == 'POST':
-        deposit_info = [request.form['amount'], request.form['currency']]
-        if checkDeposit(deposit_info):
-            return "Successful deposit"
+    if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
+        if request.method == 'POST':
+            deposit_info = [request.form['amount'], request.form['currency']]
+            if checkDeposit(deposit_info):
+                return "Successful deposit"
+            else:
+                return "Deposit error"
         else:
-            return "Deposit error"
+            return render_template('deposit.html')
     else:
-        return render_template('deposit.html')
+        return redirect('/login/')
 
 
 @app.route('/account/bank-statement/')
 def bank_statement():
-    return render_template('bank-statement.html')
+    if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
+        return render_template('bank-statement.html')
+    else:
+        return redirect('/login/')
 
 
 app.run()

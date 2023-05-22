@@ -1,5 +1,20 @@
 from flask import Flask, render_template, request, redirect
 from formChecks import *
+import sqlite3
+
+conn = sqlite3.connect('users.db')
+c = conn.cursor()
+# TODO: if table "users" already exists, but has different info, program will not function
+c.execute("""CREATE TABLE IF NOT EXISTS users (
+            firstName text,
+            lastName text,
+            email text,
+            password text,
+            currency text,
+            securityAnswer text,
+            balance integer
+            )""")
+conn.commit()
 
 app = Flask(__name__)
 
@@ -14,17 +29,10 @@ def register():
     if request.method == 'POST':
         registration_info = [request.form['firstName'], request.form['lastName'], request.form['email'],
                              request.form['password'], request.form['currency'], request.form['securityAnswer']]
-        first_name = request.form['firstName']
-        last_name = request.form['lastName']
-        email = request.form['email']
-        password = request.form['password']
-        currency = request.form['currency']
-        security_answer = request.form['securityAnswer']
-        print(registration_info)
         if checkRegistration(registration_info):
-            return redirect('/login/')
+            return "Successfully registered"
         else:
-            return "Registration error"
+            return "Your account already exits, please login"
     else:
         return render_template('register.html')
 
@@ -34,16 +42,10 @@ def merchant_payment():
     if request.method == 'POST':
         merchant_info = [request.form['amount'], request.form['currency'], request.form['merchantAccount'],
                          request.form['email'], request.form['password']]
-        amount = request.form['amount']
-        currency = request.form['currency']
-        merchant_account = request.form['merchantAccount']
-        email = request.form['email']
-        password = request.form['password']
-        print(merchant_info)
-        if checkMerchantInfo(merchant_info):
-            return redirect('/')
+        if checkMerchantInfo(merchant_info) == True:
+            return "Successful payment"
         else:
-            return "Merchant info error"
+            return checkMerchantInfo(merchant_info)
     else:
         return render_template('merchant-payment.html')
 
@@ -52,13 +54,10 @@ def merchant_payment():
 def login():
     if request.method == 'POST':
         login_info = [request.form['email'], request.form['password']]
-        email = request.form['email']
-        password = request.form['password']
-        print(login_info)
         if checkLogin(login_info):
-            return redirect('/login/')
+            return redirect('/security-question/')
         else:
-            return "Login error"
+            return "Incorrect email or password"
     else:
         return render_template('login.html')
 
@@ -67,12 +66,10 @@ def login():
 def security_question():
     if request.method == 'POST':
         security_answer_info = [request.form['securityAnswer']]
-        security_answer = request.form['securityAnswer']
-        print(security_answer_info)
         if checkSecurityAnswer(security_answer_info):
-            return redirect('/login/')
+            return redirect('/account/')
         else:
-            return "Security answer error"
+            return "Incorrect security answer"
     else:
         return render_template('security-question.html')
 
@@ -86,11 +83,8 @@ def account():
 def deposit():
     if request.method == 'POST':
         deposit_info = [request.form['amount'], request.form['currency']]
-        amount = request.form['amount']
-        currency = request.form['currency']
-        print(deposit_info)
         if checkDeposit(deposit_info):
-            return redirect('/account/')
+            return "Successful deposit"
         else:
             return "Deposit error"
     else:

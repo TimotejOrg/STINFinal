@@ -4,7 +4,7 @@ import sqlite3
 
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
-# TODO: if table "users" already exists, but has different info, program will not function
+#c.execute("DROP TABLE IF EXISTS users")
 c.execute("""CREATE TABLE IF NOT EXISTS users (
             firstName text,
             lastName text,
@@ -43,7 +43,7 @@ def merchant_payment():
     if request.method == 'POST':
         merchant_info = [request.form['amount'], request.form['currency'], request.form['merchantAccount'],
                          request.form['email'], request.form['password']]
-        if checkMerchantInfo(merchant_info) == True:
+        if checkMerchantInfo(merchant_info) == "True":
             return "Successful payment"
         else:
             return checkMerchantInfo(merchant_info)

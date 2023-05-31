@@ -5,14 +5,14 @@
   <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
   <style>
     #email {
-      margin-top: 50px; /* Adjust the margin value as needed */
+      margin-top: 50px;
     }
   </style>
 </head>
 <body>
   <div class="form-container">
     <form method="post">
-      <input type="number" id="amount" name="amount" placeholder="Částka k zaplacení" required>
+      <input type="number" id="amount" step=any min=0 name="amount" placeholder="Částka k zaplacení" required>
       
       <input type="email" id="email" name="email" placeholder="E-mail" required>
       <input type="password" id="password" name="password" placeholder="Heslo" required>

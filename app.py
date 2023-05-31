@@ -42,9 +42,9 @@ def register():
         registration_info = [request.form['firstName'], request.form['lastName'], request.form['email'],
                              request.form['password'], request.form['currency'], request.form['securityAnswer']]
         if checkRegistration(registration_info):
-            return "Successfully registered"
+            return "Úspěšně zaregistrováno"
         else:
-            return "Your account already exits, please login"
+            return "Váš účet již existuje, přihlaste se, prosím"
     else:
         return render_template('register.html')
 
@@ -66,10 +66,10 @@ def merchant_payment():
     if 'merchant_currency' in session:
         if request.method == 'POST':
             merchant_info = [request.form['amount'], request.form['email'], request.form['password']]
-            if checkMerchantInfo(merchant_info) == "True":
-                return "Successful payment"
+            if checkMerchantPaymentInfo(merchant_info) == "True":
+                return "Úspěšná platba"
             else:
-                return checkMerchantInfo(merchant_info)
+                return checkMerchantPaymentInfo(merchant_info)
         else:
             return render_template('merchant-payment.html')
     else:
@@ -83,7 +83,7 @@ def login():
         if checkLogin(login_info):
             return redirect('/security-question/')
         else:
-            return "Incorrect email or password"
+            return "Přihlašovací údaje jsou nesprávné"
     else:
         return render_template('login.html')
 
@@ -96,7 +96,7 @@ def security_question():
             if checkSecurityAnswer(security_answer_info):
                 return redirect('/account/')
             else:
-                return "Incorrect security answer"
+                return "Nesprávná bezpečnostní odpověď"
         else:
             return render_template('security-question.html')
     else:
@@ -111,15 +111,30 @@ def account():
         return redirect('/login/')
 
 
+@app.route('/account/payment/', methods=['GET', 'POST'])
+def payment():
+    if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
+        if request.method == 'POST':
+            payment_info = [request.form['amount'], request.form['currency'], request.form["paymentAccount"]]
+            if checkPayment(payment_info) == "True":
+                return "Úspěšná platba"
+            else:
+                return checkPayment(payment_info)
+        else:
+            return render_template('payment.html')
+    else:
+        return redirect('/login/')
+
+
 @app.route('/account/deposit/', methods=['GET', 'POST'])
 def deposit():
     if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
         if request.method == 'POST':
             deposit_info = [request.form['amount'], request.form['currency']]
-            if checkDeposit(deposit_info):
-                return "Successful deposit"
+            if checkDeposit(deposit_info) == "True":
+                return "Úspěšný vklad"
             else:
-                return "Deposit error"
+                return checkDeposit(deposit_info)
         else:
             return render_template('deposit.html')
     else:

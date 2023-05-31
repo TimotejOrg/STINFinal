@@ -4,6 +4,46 @@ from currency_converter import CurrencyConverter
 import sqlite3
 
 
+def checkPayment(payment_info):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    # update user's balance
+    c.execute("SELECT balance FROM users WHERE email=?", [session['email']])
+    session['balance'] = c.fetchone()[0]
+    orig_payment_amount = float(payment_info[0])
+    currency = payment_info[1]
+    current_balance = session['balance']
+    try:
+        payment_amount = convertCurrency(currency, session['currency'], float(orig_payment_amount))
+    except:
+        return "Směnné kurzy měn v současné době nejsou k dispozici, zkuste to později"
+    new_balance = current_balance - payment_amount
+    if orig_payment_amount > 0:
+        if new_balance >= 0:
+            print("NORMAL")
+            # Update the user's balance in the database
+            c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, session['email']))
+            c.execute("INSERT INTO transactions (userEmail, transactionType, amount, currency, balance) "
+                      "VALUES (?, 'payment', ?, ?, ?)",
+                      (session['email'], orig_payment_amount, currency, round(new_balance, 2)))
+            conn.commit()
+            return "True"  # Funds successfully removed
+        elif new_balance >= 0 - (current_balance * 0.1):
+            print("DRAFT")
+            # Update the user's balance in the database
+            c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, session['email']))
+            c.execute("INSERT INTO transactions (userEmail, transactionType, amount, currency, balance) "
+                      "VALUES (?, 'payment', ?, ?, ?)",
+                      (session['email'], orig_payment_amount, currency, round(new_balance, 2)))
+            conn.commit()
+            return "True"  # Funds successfully removed
+
+        else:
+            return "Není dostatečný zůstatek pro provedení platby"  # False  # Insufficient funds
+    else:
+        return "Nesprávná částka"
+
+
 def getBalance():
     return session['balance']
 
@@ -51,7 +91,7 @@ def setup_merchant(merchant_setup_info):
     session['merchant_account'] = merchant_setup_info[1]
 
 
-def checkMerchantInfo(merchant_info):
+def checkMerchantPaymentInfo(merchant_info):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
     orig_payment_amount = float(merchant_info[0])
@@ -66,22 +106,33 @@ def checkMerchantInfo(merchant_info):
         try:
             payment_amount = convertCurrency(session['merchant_currency'], user_currency, float(orig_payment_amount))
         except:
-            return "Currency exchange rates currently unavailable, try again later"
+            return "Směnné kurzy měn v současné době nejsou k dispozici, zkuste to později"
         new_balance = current_balance - payment_amount
-
-        if new_balance >= 0:
-            if orig_payment_amount > 0:
+        if orig_payment_amount > 0:
+            if new_balance >= 0:
                 # Update the user's balance in the database
                 c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, email))
                 c.execute("INSERT INTO transactions (userEmail, transactionType, amount, currency, balance) "
-                          "VALUES (?, 'payment', ?, ?, ?)", (email, orig_payment_amount, session['merchant_currency'], round(new_balance, 2)))
+                          "VALUES (?, 'payment', ?, ?, ?)",
+                          (email, orig_payment_amount, session['merchant_currency'], round(new_balance, 2)))
                 conn.commit()
                 return "True"  # Funds successfully removed
-            else: return "Incorrect payment amount"
+            elif new_balance >= 0 - (current_balance * 0.1):
+                new_balance = new_balance * 1.1
+                # Update the user's balance in the database
+                c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, email))
+                c.execute("INSERT INTO transactions (userEmail, transactionType, amount, currency, balance) "
+                          "VALUES (?, 'payment', ?, ?, ?)",
+                          (email, orig_payment_amount, session['merchant_currency'], round(new_balance, 2)))
+                conn.commit()
+                return "True"  # Funds successfully removed
+
+            else:
+                return "Není dostatečný zůstatek pro provedení platby"  # False  # Insufficient funds
         else:
-            return "Insufficient funds"  # False  # Insufficient funds
+            return "Nesprávná částka"
     else:
-        return "Login credentials are incorrect"  # False  # Login credentials are incorrect
+        return "Přihlašovací údaje jsou nesprávné"  # False  # Login credentials are incorrect
 
 
 def checkLogin(login_info):
@@ -127,7 +178,7 @@ def checkDeposit(deposit_info):
     try:
         deposit_amount = convertCurrency(deposit_currency, session['currency'], float(orig_deposit_amount))
     except:
-        return "Currency exchange rates currently unavailable, try again later"
+        return "Směnné kurzy měn v současné době nejsou k dispozici, zkuste to později"
     new_balance = session['balance'] + deposit_amount
     if float(deposit_info[0]) > 0:
         # Update the user's balance in the database
@@ -136,6 +187,6 @@ def checkDeposit(deposit_info):
                   "VALUES (?, 'deposit', ?, ?, ?)",
                   (session['email'], orig_deposit_amount, deposit_currency, round(new_balance, 2)))
         conn.commit()
-        return True
+        return "True"
     else:
-        return False
+        return "Nesprávná částka"

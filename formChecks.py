@@ -1,5 +1,6 @@
 from flask import session
 from forex_python.converter import CurrencyRates
+from currency_converter import CurrencyConverter
 import sqlite3
 
 
@@ -13,10 +14,15 @@ def getTransactions():
     c.execute("SELECT * FROM transactions WHERE userEmail=?", [session['email']])
     return c.fetchall()
 
+
 def convertCurrency(from_currency, to_currency, amount):
     # Create an instance of the CurrencyRates class
-    c = CurrencyRates()
-    return c.convert(from_currency.upper(), to_currency.upper(), amount)
+    try:
+        c = CurrencyConverter()
+        return c.convert(amount, from_currency.upper(), to_currency.upper())
+    except:
+        c = CurrencyRates()
+        return c.convert(from_currency.upper(), to_currency.upper(), amount)
 
 
 def checkRegistration(registration_info):
@@ -40,20 +46,27 @@ def checkRegistration(registration_info):
         return True  # User registration successful
 
 
+def setup_merchant(merchant_setup_info):
+    session['merchant_currency'] = merchant_setup_info[0]
+    session['merchant_account'] = merchant_setup_info[1]
+
+
 def checkMerchantInfo(merchant_info):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
     orig_payment_amount = float(merchant_info[0])
-    merchant_currency = merchant_info[1]
-    email = merchant_info[3]
-    password = merchant_info[4]
+    email = merchant_info[1]
+    password = merchant_info[2]
     # Check if the provided email and password match a user in the database
     c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
     user = c.fetchone()
-    if user:  # email and password match a specific user
+    if user is not None:  # email and password match a specific user
         user_currency = user[4]
         current_balance = user[6]
-        payment_amount = convertCurrency(merchant_currency, user_currency, float(orig_payment_amount))
+        try:
+            payment_amount = convertCurrency(session['merchant_currency'], user_currency, float(orig_payment_amount))
+        except:
+            return "Currency exchange rates currently unavailable, try again later"
         new_balance = current_balance - payment_amount
 
         if new_balance >= 0:
@@ -61,7 +74,7 @@ def checkMerchantInfo(merchant_info):
                 # Update the user's balance in the database
                 c.execute("UPDATE users SET balance=? WHERE email=?", (new_balance, email))
                 c.execute("INSERT INTO transactions (userEmail, transactionType, amount, currency, balance) "
-                          "VALUES (?, 'payment', ?, ?, ?)", (email, orig_payment_amount, merchant_currency, round(new_balance, 2)))
+                          "VALUES (?, 'payment', ?, ?, ?)", (email, orig_payment_amount, session['merchant_currency'], round(new_balance, 2)))
                 conn.commit()
                 return "True"  # Funds successfully removed
             else: return "Incorrect payment amount"
@@ -111,7 +124,10 @@ def checkDeposit(deposit_info):
 
     orig_deposit_amount = deposit_info[0]
     deposit_currency = deposit_info[1]
-    deposit_amount = convertCurrency(deposit_currency, session['currency'], float(orig_deposit_amount))
+    try:
+        deposit_amount = convertCurrency(deposit_currency, session['currency'], float(orig_deposit_amount))
+    except:
+        return "Currency exchange rates currently unavailable, try again later"
     new_balance = session['balance'] + deposit_amount
     if float(deposit_info[0]) > 0:
         # Update the user's balance in the database

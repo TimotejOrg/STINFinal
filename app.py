@@ -49,17 +49,31 @@ def register():
         return render_template('register.html')
 
 
-@app.route('/merchant-payment/', methods=['GET', 'POST'])
-def merchant_payment():
+
+
+
+@app.route('/merchant-setup/', methods=['GET', 'POST'])
+def merchant_setup():
     if request.method == 'POST':
-        merchant_info = [request.form['amount'], request.form['currency'], request.form['merchantAccount'],
-                         request.form['email'], request.form['password']]
-        if checkMerchantInfo(merchant_info) == "True":
-            return "Successful payment"
-        else:
-            return checkMerchantInfo(merchant_info)
+        merchant_setup_info = [request.form['currency'], request.form['merchantAccount']]
+        setup_merchant(merchant_setup_info)
+        return redirect('/merchant-setup/merchant-payment/')
     else:
-        return render_template('merchant-payment.html')
+        return render_template('merchant-setup.html')
+
+@app.route('/merchant-setup/merchant-payment/', methods=['GET', 'POST'])
+def merchant_payment():
+    if 'merchant_currency' in session:
+        if request.method == 'POST':
+            merchant_info = [request.form['amount'], request.form['email'], request.form['password']]
+            if checkMerchantInfo(merchant_info) == "True":
+                return "Successful payment"
+            else:
+                return checkMerchantInfo(merchant_info)
+        else:
+            return render_template('merchant-payment.html')
+    else:
+        return redirect('/merchant-setup/')
 
 
 @app.route('/login/', methods=['GET', 'POST'])

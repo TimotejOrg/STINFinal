@@ -3,6 +3,7 @@ from forex_python.converter import CurrencyRates
 from currency_converter import CurrencyConverter
 import sqlite3
 
+#Testing new branch
 
 def getBalance():
     return session['balance']

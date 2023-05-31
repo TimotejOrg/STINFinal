@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect
-from formChecks import *
 import sqlite3
+from flask import Flask, render_template, request, redirect
+from form_checks import *
 
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
@@ -39,14 +39,13 @@ def main():
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        registration_info = [request.form['firstName'], request.form['lastName'], request.form['email'],
-                             request.form['password'], request.form['currency'], request.form['securityAnswer']]
-        if checkRegistration(registration_info):
+        registration_info = [request.form['firstName'], request.form['lastName'],
+                             request.form['email'], request.form['password'],
+                             request.form['currency'], request.form['securityAnswer']]
+        if check_registration(registration_info):
             return "Úspěšně zaregistrováno"
-        else:
-            return "Váš účet již existuje, přihlaste se, prosím"
-    else:
-        return render_template('register.html')
+        return "Váš účet již existuje, přihlaste se, prosím"
+    return render_template('register.html')
 
 
 
@@ -58,34 +57,28 @@ def merchant_setup():
         merchant_setup_info = [request.form['currency'], request.form['merchantAccount']]
         setup_merchant(merchant_setup_info)
         return redirect('/merchant-setup/merchant-payment/')
-    else:
-        return render_template('merchant-setup.html')
+    return render_template('merchant-setup.html')
 
 @app.route('/merchant-setup/merchant-payment/', methods=['GET', 'POST'])
 def merchant_payment():
     if 'merchant_currency' in session:
         if request.method == 'POST':
-            merchant_info = [request.form['amount'], request.form['email'], request.form['password']]
-            if checkMerchantPaymentInfo(merchant_info) == "True":
+            merchant_info = [request.form['amount'],request.form['email'],request.form['password']]
+            if check_merchant_payment_info(merchant_info) == "True":
                 return "Úspěšná platba"
-            else:
-                return checkMerchantPaymentInfo(merchant_info)
-        else:
-            return render_template('merchant-payment.html')
-    else:
-        return redirect('/merchant-setup/')
+            return check_merchant_payment_info(merchant_info)
+        return render_template('merchant-payment.html')
+    return redirect('/merchant-setup/')
 
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         login_info = [request.form['email'], request.form['password']]
-        if checkLogin(login_info):
+        if check_login(login_info):
             return redirect('/security-question/')
-        else:
-            return "Přihlašovací údaje jsou nesprávné"
-    else:
-        return render_template('login.html')
+        return "Přihlašovací údaje jsou nesprávné"
+    return render_template('login.html')
 
 
 @app.route('/security-question/', methods=['GET', 'POST'])
@@ -93,37 +86,31 @@ def security_question():
     if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
         if request.method == 'POST':
             security_answer_info = [request.form['securityAnswer']]
-            if checkSecurityAnswer(security_answer_info):
+            if check_security_answer(security_answer_info):
                 return redirect('/account/')
-            else:
-                return "Nesprávná bezpečnostní odpověď"
-        else:
-            return render_template('security-question.html')
-    else:
-        return redirect('/login/')
+            return "Nesprávná bezpečnostní odpověď"
+        return render_template('security-question.html')
+    return redirect('/login/')
 
 
 @app.route('/account/')
 def account():
     if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
         return render_template('account.html')
-    else:
-        return redirect('/login/')
+    return redirect('/login/')
 
 
 @app.route('/account/payment/', methods=['GET', 'POST'])
 def payment():
     if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
         if request.method == 'POST':
-            payment_info = [request.form['amount'], request.form['currency'], request.form["paymentAccount"]]
-            if checkPayment(payment_info) == "True":
+            payment_info = [request.form['amount'], request.form['currency'],
+                            request.form["paymentAccount"]]
+            if check_payment(payment_info) == "True":
                 return "Úspěšná platba"
-            else:
-                return checkPayment(payment_info)
-        else:
-            return render_template('payment.html')
-    else:
-        return redirect('/login/')
+            return check_payment(payment_info)
+        return render_template('payment.html')
+    return redirect('/login/')
 
 
 @app.route('/account/deposit/', methods=['GET', 'POST'])
@@ -131,24 +118,20 @@ def deposit():
     if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
         if request.method == 'POST':
             deposit_info = [request.form['amount'], request.form['currency']]
-            if checkDeposit(deposit_info) == "True":
+            if check_deposit(deposit_info) == "True":
                 return "Úspěšný vklad"
-            else:
-                return checkDeposit(deposit_info)
-        else:
-            return render_template('deposit.html')
-    else:
-        return redirect('/login/')
+            return check_deposit(deposit_info)
+        return render_template('deposit.html')
+    return redirect('/login/')
 
 
 @app.route('/account/bank-statement/')
 def bank_statement():
     if 'currency' in session and 'securityAnswer' in session and 'balance' in session:
         # Retrieve the transaction history from the "transactions" table for the current user
-        transactions = getTransactions()
+        transactions = get_transactions()
         return render_template('bank-statement.html', transactions=transactions)
-    else:
-        return redirect('/login/')
+    return redirect('/login/')
 
 
 app.run()

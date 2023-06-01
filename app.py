@@ -35,9 +35,9 @@ app.secret_key = "my_secret_key"
 @app.route('/update_server', methods=['POST'])
 def webhook():
     if request.method == 'POST':
-        repo = git.Repo('https://github.com/TimotejOrg/STINFinal')
-        origin = repo.remotes.origin
-        origin.pull()
+        repo = git.Repo('/home/timotej')
+        repo.remotes.origin.pull(url='https://github.com/TimotejOrg/STINFinal.git')
+
         return 'Updated PythonAnywhere successfully', 200
     else:
         return 'Wrong event type', 400

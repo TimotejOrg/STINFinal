@@ -30,9 +30,18 @@ jobs:
         run: pytest
 
       - name: Deploy to PythonAnywhere
-        uses: chrispat/actions-pythonanywhere@v1
+        run: |
+          pip install pythonanywhere
+          pa_autoconfigure_web.py --python=python3.11 timotej.pythonanywhere.com
+
+      - name: Push code to PythonAnywhere
+        run: |
+          git push https://timotej@git.pythonanywhere.com/timotej/timotej.pythonanywhere.com.git HEAD:master
+
+      - name: Reload webapp
+        uses: jensvog/pythonanywhere-webapp-reload-action@v1
         with:
-          api_token: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
+          host: 'www.pythonanywhere.com'
           username: timotej
-          domain: timotej.pythonanywhere.com
-          source_directory: .
+          api-token: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
+          domain-name: timotej.pythonanywhere.com

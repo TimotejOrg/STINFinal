@@ -22,7 +22,17 @@ jobs:
         run: ls -la
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run tests with code coverage
         run: pytest
+
+      - name: Deploy to PythonAnywhere
+        uses: chrispat/actions-pythonanywhere@v1
+        with:
+          api_token: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
+          username: timotej
+          domain: timotej.pythonanywhere.com
+          source_directory: .

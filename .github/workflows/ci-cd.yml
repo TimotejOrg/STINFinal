@@ -28,20 +28,3 @@ jobs:
 
       - name: Run tests with code coverage
         run: pytest
-
-      - name: Deploy to PythonAnywhere
-        run: |
-          pip install pythonanywhere
-          pa_autoconfigure_django.py --python=python3.11 timotej.pythonanywhere.com
-
-      - name: Push code to PythonAnywhere
-        run: |
-          git push https://timotej@git.pythonanywhere.com/timotej/timotej.pythonanywhere.com.git HEAD:master
-
-      - name: Reload webapp
-        uses: jensvog/pythonanywhere-webapp-reload-action@v1
-        with:
-          host: 'www.pythonanywhere.com'
-          username: timotej
-          api-token: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
-          domain-name: timotej.pythonanywhere.com

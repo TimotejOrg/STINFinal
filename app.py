@@ -1,6 +1,7 @@
 import sqlite3
 from flask import Flask, render_template, request, redirect
 from form_checks import *
+import git
 
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
@@ -31,6 +32,17 @@ app = Flask(__name__)
 app.secret_key = "my_secret_key"
 
 
+@app.route('/update_server', methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('https://github.com/TimotejOrg/STINFinal')
+        origin = repo.remotes.origin
+        origin.pull()
+        return 'Updated PythonAnywhere successfully', 200
+    else:
+        return 'Wrong event type', 400
+
+
 @app.route('/')
 def main():
     return render_template('main.html')
@@ -48,9 +60,6 @@ def register():
     return render_template('register.html')
 
 
-
-
-
 @app.route('/merchant-setup/', methods=['GET', 'POST'])
 def merchant_setup():
     if request.method == 'POST':
@@ -59,11 +68,13 @@ def merchant_setup():
         return redirect('/merchant-setup/merchant-payment/')
     return render_template('merchant-setup.html')
 
+
 @app.route('/merchant-setup/merchant-payment/', methods=['GET', 'POST'])
 def merchant_payment():
     if 'merchant_currency' in session:
         if request.method == 'POST':
-            merchant_info = [request.form['amount'],request.form['email'],request.form['password']]
+            merchant_info = [request.form['amount'], request.form['email'],
+                             request.form['password']]
             if check_merchant_payment_info(merchant_info) == "True":
                 return "Úspěšná platba"
             return check_merchant_payment_info(merchant_info)

@@ -36,7 +36,12 @@ app.secret_key = "my_secret_key"
 def webhook():
     if request.method == 'POST':
         repo = git.Repo('/home/timotej')
-        repo.remotes.origin.pull(url='https://github.com/TimotejOrg/STINFinal.git')
+
+        origin = repo.remotes.origin
+        origin.set_url('https://github.com/TimotejOrg/STINFinal.git')
+
+        origin.fetch()
+        origin.pull()
 
         return 'Updated PythonAnywhere successfully', 200
     else:

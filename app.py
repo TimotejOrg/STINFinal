@@ -5,8 +5,8 @@ import git
 
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
-# c.execute("DROP TABLE IF EXISTS users")
-# c.execute("DROP TABLE IF EXISTS transactions")
+c.execute("DROP TABLE IF EXISTS users")
+c.execute("DROP TABLE IF EXISTS transactions")
 c.execute("""CREATE TABLE IF NOT EXISTS users (
             firstName text, 
             lastName text,
@@ -145,4 +145,4 @@ def bank_statement():
     return redirect('/login/')
 
 
-app.run()
+#app.run()

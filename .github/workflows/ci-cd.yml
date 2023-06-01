@@ -32,3 +32,16 @@ jobs:
       - name: Analysing the code with pylint
         run: |
           find . -name '*.py' -exec pylint {} \;
+          
+      - name: Setup .NET Core # Required to execute ReportGenerator
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.x
+          dotnet-quality: 'ga'
+
+      - name: ReportGenerator
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.21
+        with:
+          reports: cobertura.xml
+          targetdir: coveragereport
+          reporttypes: Html;XML

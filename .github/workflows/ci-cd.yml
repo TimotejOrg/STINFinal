@@ -28,3 +28,7 @@ jobs:
 
       - name: Run tests with code coverage
         run: pytest
+    
+      - name: Analysing the code with pylint
+        run: |
+          find . -name '*.py' -exec pylint {} \;

@@ -32,7 +32,7 @@ jobs:
       - name: Deploy to PythonAnywhere
         run: |
           pip install pythonanywhere
-          pa_autoconfigure_web.py --python=python3.11 timotej.pythonanywhere.com
+          pa_autoconfigure_django.py --python=python3.11 timotej.pythonanywhere.com
 
       - name: Push code to PythonAnywhere
         run: |

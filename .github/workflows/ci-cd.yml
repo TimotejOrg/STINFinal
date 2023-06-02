@@ -27,7 +27,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests with code coverage
-        run: pytest --cov=app --cov=form_checks tests/
+        run: pytest --cov-report=html:coverage_re --cov=app --cov=form_checks tests/
     
       - name: Analysing the code with pylint
         run: |

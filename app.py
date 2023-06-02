@@ -36,16 +36,7 @@ app.secret_key = "my_secret_key"
 def webhook():
     if request.method == 'POST':
         repo = git.Repo('/home/timotej')
-
-        origin = repo.remotes.origin
-        origin.set_url('https://github.com/TimotejOrg/STINFinal.git')
-
-        origin.fetch()
-        origin.pull()
-
-        return 'Updated PythonAnywhere successfully', 200
-    else:
-        return 'Wrong event type', 400
+        repo.remotes.origin.set_url('https://github.com/TimotejOrg/STINFinal.git').fetch().pull()
 
 
 @app.route('/')
@@ -148,6 +139,3 @@ def bank_statement():
         transactions = get_transactions()
         return render_template('bank-statement.html', transactions=transactions)
     return redirect('/login/')
-
-
-#app.run()

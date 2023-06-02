@@ -7,16 +7,12 @@ from currency_converter import CurrencyConverter
 def check_payment(payment_info):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    # update user's balance
     c.execute("SELECT balance FROM users WHERE email=?", [session['email']])
     session['balance'] = c.fetchone()[0]
     orig_payment_amount = float(payment_info[0])
     currency = payment_info[1]
     current_balance = session['balance']
-    try:
-        payment_amount = convert_currency(currency, session['currency'], float(orig_payment_amount))
-    except:
-        return "Směnné kurzy měn v současné době nejsou k dispozici, zkuste to později"
+    payment_amount = convert_currency(currency, session['currency'], float(orig_payment_amount))
     new_balance = current_balance - payment_amount
     if orig_payment_amount > 0:
         if new_balance >= 0:
@@ -45,11 +41,6 @@ def can_use_draft(current_balance, payment_amount):
     new_balance = current_balance - payment_amount
     return bool(new_balance >= 0 - (current_balance * 0.1))
 
-
-def get_balance():
-    return session['balance']
-
-
 def get_transactions():
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
@@ -58,12 +49,8 @@ def get_transactions():
 
 
 def convert_currency(from_currency, to_currency, amount):
-    try:
-        c = CurrencyConverter()
-        return c.convert(amount, from_currency.upper(), to_currency.upper())
-    except:
-        c = CurrencyRates()
-        return c.convert(from_currency.upper(), to_currency.upper(), amount)
+    c = CurrencyConverter()
+    return c.convert(amount, from_currency.upper(), to_currency.upper())
 
 
 def check_registration(registration_info):
@@ -74,7 +61,7 @@ def check_registration(registration_info):
     email = registration_info[2]
 
     # Check if a user with the same first and last name already exists in the database
-    c.execute("SELECT * FROM users WHERE firstName=? AND lastName=? AND email=?", (first_name,
+    c.execute("SELECT * FROM users WHERE firstName=? AND lastName=? OR email=?", (first_name,
                                                                                    last_name,
                                                                                    email))
     existing_user = c.fetchone()
@@ -106,11 +93,8 @@ def check_merchant_payment_info(merchant_info):
     if user is not None:  # email and password match a specific user
         user_currency = user[4]
         current_balance = user[6]
-        try:
-            payment_amount = convert_currency(session['merchant_currency'], user_currency,
+        payment_amount = convert_currency(session['merchant_currency'], user_currency,
                                               float(orig_payment_amount))
-        except:
-            return "Směnné kurzy měn v současné době nejsou k dispozici, zkuste to později"
         new_balance = current_balance - payment_amount
         if orig_payment_amount > 0:
             if new_balance >= 0:
@@ -176,11 +160,8 @@ def check_deposit(deposit_info):
 
     orig_deposit_amount = deposit_info[0]
     deposit_currency = deposit_info[1]
-    try:
-        deposit_amount = convert_currency(deposit_currency, session['currency'],
+    deposit_amount = convert_currency(deposit_currency, session['currency'],
                                           float(orig_deposit_amount))
-    except:
-        return "Směnné kurzy měn v současné době nejsou k dispozici, zkuste to později"
     new_balance = session['balance'] + deposit_amount
     if float(deposit_info[0]) > 0:
         # Update the user's balance in the database

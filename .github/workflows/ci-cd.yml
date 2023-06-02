@@ -28,6 +28,10 @@ jobs:
 
       - name: Run tests with code coverage
         run: pytest --cov-report=html:coverage_re --cov=app --cov=form_checks tests/
+        
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+          env: CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     
       - name: Analysing the code with pylint
         run: |

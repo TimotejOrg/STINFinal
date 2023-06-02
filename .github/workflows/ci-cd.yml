@@ -18,26 +18,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: List directory contents
-        run: ls -la
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run tests with code coverage
-        run: pytest --cov-report=html:coverage_re --cov=app --cov=form_checks tests/
+        run: pytest --cov=app --cov=form_checks tests/ --cov-report=xml
         
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
-
-      - name: Analysing the code with pylint
-        run: |
-          find . -name '*.py' -exec pylint {} \;
-          
-      - name: Commit pytest coverage table
-        uses: peter-evans/commit-comment@main
-        with:
-          body: ${{ steps.pytester-cov.outputs.output-table }}
-      
